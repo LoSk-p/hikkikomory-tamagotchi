@@ -1,0 +1,3 @@
+set(COMPONENT_REQUIRES "Crypto" "Arduino_JSON" "WebSockets" "mbedtls")
+idf_component_register(SRCS "main.cpp" "robonomics_utils/address.cpp" "web_server.cpp" "robonomics_utils/blake/blake2b.cpp" "utils/nvs_utils.c" "robonomics_utils/BlockchainUtils.cpp" "robonomics_utils/Call.cpp" "robonomics_utils/Encoder.cpp" "robonomics_utils/Extrinsic.cpp" "robonomics_utils/JsonUtils.cpp" "robonomics_utils/PayloadParamsUtils.cpp" "robonomics_utils/Robonomics.cpp" "robonomics_utils/Utils.cpp" "robonomics_utils/WebsocketUtils.cpp"
+                    INCLUDE_DIRS ".")
