@@ -24,6 +24,11 @@
 #include "robonomics_utils/Robonomics.h"
 #include "utils/nvs_utils.h"
 #include "robonomics_utils/address.h"
+#include "LCD_Driver/ST7789.h"
+#include "RGB/RGB.h"
+#include "LVGL_UI/LVGL_Example.h"
+#include "driver/gpio.h"
+#include "utils/battery_utils.h"
 
 
 #if !defined ZB_ED_ROLE
@@ -34,6 +39,7 @@ static const char *TAG = "ESP_ZB_ON_OFF_LIGHT";
 
 Robonomics robonomics;
 float happiness = 0;
+int lcd_brightness = 30;
 // WiFiCredentials wifi_creds;
 
 esp_err_t esp_zcl_utility_add_ep_basic_manufacturer_info(esp_zb_ep_list_t *ep_list, uint8_t endpoint_id, zcl_basic_manufacturer_info_t *info)
@@ -251,6 +257,69 @@ void get_wifi_creds() {
     }
 }
 
+static void battery_task(void *pvParameters) {
+    unsigned int battery_level;
+    while (0) {
+        vTaskDelay(pdMS_TO_TICKS(5000));
+        battery_level = getBatteryState();
+        ESP_LOGI(TAG, "Battery: %d", battery_level);
+    }
+}
+
+static void lcd_task(void *pvParameters) {
+    float angle_float;
+    int32_t angle;
+    while (1) {
+        vTaskDelay(pdMS_TO_TICKS(10));
+        set_angle((int32_t)happiness);
+        lv_timer_handler();
+    }
+}
+
+void setup_button() {
+    gpio_set_direction(BUTTON_GPIO, GPIO_MODE_INPUT);
+}
+
+void button_pressed_handle() {
+    if (lcd_brightness == 0) {
+        lcd_brightness = 30;
+        RGB_turn_on();
+    } else {
+        lcd_brightness = 0;
+        RGB_turn_off();
+    }
+    set_brightness(lcd_brightness);
+}
+
+void button_task(void *pvParameters) {
+    int button_level = 1;
+    int button_level_prev = 1;
+    int button_pressed_count = 0;
+    bool button_handled = false;
+    while (1) {
+        vTaskDelay(pdMS_TO_TICKS(10));
+        button_level = gpio_get_level(BUTTON_GPIO);
+        // ESP_LOGI(TAG, "GPIO Level: %d", button_level);
+        if (button_level == 0) {
+            if (button_level_prev == 1) {
+                button_pressed_count++;
+            } else if (button_pressed_count < 30) {
+                button_pressed_count++;
+            } else {
+                if (!button_handled) {
+                    button_pressed_handle();
+                }
+                button_handled = true;
+                button_pressed_count = 0;
+            }
+        } else {
+            button_handled = false;
+            button_pressed_count = 0;
+        }
+        button_level_prev = button_level;
+    }
+}
+
 extern "C" void app_main(void)
 {
     esp_err_t ret = nvs_flash_init();
@@ -271,6 +340,13 @@ extern "C" void app_main(void)
     get_or_generate_private_key(robonomicsPrivateKey);
     robonomics.setPrivateKey(robonomicsPrivateKey);
     get_wifi_creds();
+    // setupBatteryMeter();
+    RGB_Init();
+    RGB_Example();
+    LCD_Init();
+    BK_Light(50);
+    LVGL_Init();
+    Lvgl_Example1();
     esp_zb_platform_config_t config = {
         .radio_config = ESP_ZB_DEFAULT_RADIO_CONFIG(),
         .host_config = ESP_ZB_DEFAULT_HOST_CONFIG(),
@@ -279,5 +355,7 @@ extern "C" void app_main(void)
     xTaskCreate(esp_zb_task, "Zigbee_main", 8192, NULL, 5, NULL);
     esp_coex_wifi_i154_enable();
     xTaskCreate(happiness_manage_task, "Happiness_manage", 8192, NULL, 6, NULL);
-    // xTaskCreate(happiness_manage_task, "Datalog_main", 8192, NULL, 7, NULL);
+    xTaskCreate(lcd_task, "LCD_task", 2048, NULL, 7, NULL);
+    xTaskCreate(button_task, "Button_Task", 2048, NULL, 8, NULL);
+    // xTaskCreate(battery_task, "Battery_Task", 2048, NULL, 9, NULL);
 }

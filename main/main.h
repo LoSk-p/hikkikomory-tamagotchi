@@ -24,6 +24,8 @@ extern "C" {
 #define HAPPINESS_DECREASE_INTERVAL 3600 /* in seconds */
 #define HAPPINESS_SAVE_INTERVAL 30 /* in seconds */
 
+#define BUTTON_GPIO GPIO_NUM_9
+
 /* Zigbee configuration */
 #define INSTALLCODE_POLICY_ENABLE       false    /* enable the install code policy for security */
 #define ED_AGING_TIMEOUT                ESP_ZB_ED_AGING_TIMEOUT_64MIN
