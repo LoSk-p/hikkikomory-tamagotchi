@@ -15,14 +15,14 @@ struct NetworkConfig {
 };
 
 NetworkConfig robonomicsConfig = {
-    "wss://robonomics.network",
+    "kusama.rpc.robonomics.network",
     48,
     32,
     "631ccc82a078481584041656af292834e1ae6daab61d2875b4dd0c14bb9b17bc"
 };
 
 NetworkConfig varaConfig = {
-    "wss://vara.network",
+    "testnet.vara.network",
     49,
     137,
     "525639f713f397dcf839bd022cd821f367ebcf179de7b9253531f8adbe5436d6" 
