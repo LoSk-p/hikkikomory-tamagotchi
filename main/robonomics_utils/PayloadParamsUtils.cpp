@@ -28,8 +28,8 @@ uint64_t getTip() {
 }
 
 std::string getGenesisBlockHash() {
-    // return "525639f713f397dcf839bd022cd821f367ebcf179de7b9253531f8adbe5436d6"; // Vara
-    return "631ccc82a078481584041656af292834e1ae6daab61d2875b4dd0c14bb9b17bc"; // Robonomics
+    return "525639f713f397dcf839bd022cd821f367ebcf179de7b9253531f8adbe5436d6"; // Vara
+    // return "631ccc82a078481584041656af292834e1ae6daab61d2875b4dd0c14bb9b17bc"; // Robonomics
 }
 
 uint32_t getSpecVersion(JSONVar runtimeInfo) {

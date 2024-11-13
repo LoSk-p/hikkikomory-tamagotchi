@@ -4,9 +4,10 @@
 
 #define PUBLIC_KEY_LENGTH 32
 #define PRIVATE_KEY_LENGTH 32
-#define ADDRESS_LENGTH 48
+#define ADDRESS_LENGTH 49
 #define SR25519_PUBLIC_SIZE 32
 #define ROBONOMICS_PREFIX 0x20
+#define VARA_PREFIX 0x89
 
 // #ifdef __cplusplus
 // extern "C" {

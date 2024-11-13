@@ -29,15 +29,24 @@ static const lv_font_t * font_large;
 static const lv_font_t * font_normal;
 
 lv_obj_t * arc;
-lv_obj_t *label;
+lv_obj_t *label_battery;
+lv_obj_t *label_happiness;
 
 void set_angle(int32_t v)
 {
     lv_arc_set_value(arc, v);
     char buf[8];
     snprintf(buf, sizeof(buf), "%ld%%", v); 
-    lv_label_set_text(label, buf);
+    lv_label_set_text(label_happiness, buf);
 }
+
+void set_lcd_battery(unsigned int v) {
+    char buf[20];
+    snprintf(buf, sizeof(buf), "Battery: %u%%", v); 
+    lv_label_set_text(label_battery, buf);
+}
+
+
 
 void set_brightness(int brightness) {
     ledc_timer_config_t ledc_timer = {
@@ -79,10 +88,14 @@ void lv_example_arc_2(void)
     lv_obj_remove_style(arc, NULL, LV_PART_KNOB);   /*Be sure the knob is not displayed*/
     lv_obj_center(arc);
 
-    label = lv_label_create(lv_scr_act());
+    label_happiness = lv_label_create(lv_scr_act());
     // lv_obj_set_size(label, 100, 100);
-    lv_obj_add_style(label, &style_label, 0);
-    lv_obj_center(label);
+    lv_obj_add_style(label_happiness, &style_label, 0);
+    lv_obj_center(label_happiness);
+
+    label_battery = lv_label_create(lv_scr_act());
+    // lv_obj_set_size(label, 100, 100);
+    lv_obj_align(label_battery, LV_ALIGN_TOP_RIGHT, -10, 10);
 }
 
 

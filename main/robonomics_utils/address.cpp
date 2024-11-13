@@ -66,30 +66,67 @@ int DecodeBase58(const unsigned char *str, int len, unsigned char *result) {
     return resultlen;
 }
 
-
 char* getAddrFromPublicKey(RobonomicsPublicKey &pubKey) {
-    unsigned char plainAddr[SR25519_PUBLIC_SIZE + 3] = {ROBONOMICS_PREFIX};
-    memcpy(plainAddr + 1, pubKey.bytes, SR25519_PUBLIC_SIZE);
+    // Prepare the prefix as two bytes
+    // Prepare the prefix as two bytes
+    uint16_t prefix = 137;
+    unsigned char prefixData[2] = {0};
+    uint16_t fullPrefix = 0x4000 | ((prefix >> 8) & 0x3F) | ((prefix & 0xFF) << 6);
+    prefixData[0] = fullPrefix >> 8;
+    prefixData[1] = fullPrefix & 0xFF;
 
-    uint8_t ssPrefixed[SR25519_PUBLIC_SIZE + 8] = {0x53, 0x53, 0x35, 0x38, 0x50, 0x52, 0x45};
-    memcpy(ssPrefixed + 7, plainAddr, SR25519_PUBLIC_SIZE + 1);
+    // Prepare the SS58 prefix and the public key
+    unsigned char ssPrefixed[64] = {0};
+    memcpy(ssPrefixed, "SS58PRE", 7);  // Add the "SS58PRE" prefix
+    memcpy(ssPrefixed + 7, prefixData, 2);  // Prefix
+    memcpy(ssPrefixed + 9, pubKey.bytes, PUBLIC_KEY_LENGTH);  // Public key
 
-    unsigned char blake2bHashed[64] = {0};
-    blake2(blake2bHashed, 64, ssPrefixed, SR25519_PUBLIC_SIZE + 8, NULL, 0);
-    plainAddr[1 + PUBLIC_KEY_LENGTH] = blake2bHashed[0];
-    plainAddr[2 + PUBLIC_KEY_LENGTH] = blake2bHashed[1];
+    // Hash with Blake2b to get the checksum using your blake2 function
+    unsigned char checksum[64] = {0};
+    blake2(checksum, sizeof(checksum), ssPrefixed, 9 + PUBLIC_KEY_LENGTH, NULL, 0);  // hash the concatenation of the prefix and public key
 
-    unsigned char addrCh[SR25519_PUBLIC_SIZE * 2] = {0};
+    // Prepare the raw address
+    unsigned char rawAddress[64] = {0};
+    memcpy(rawAddress, prefixData, 2);
+    memcpy(rawAddress + 2, pubKey.bytes, PUBLIC_KEY_LENGTH);
+    memcpy(rawAddress + 34, checksum, 2);  // Add the first two bytes of the checksum
 
-    int encodedLen = EncodeBase58(plainAddr, SR25519_PUBLIC_SIZE + 3, addrCh);
+    // Base58 encode the raw address
+    unsigned char result[64] = {0};
+    int encodedLen = EncodeBase58(rawAddress, 36, result);
 
-    // std::string result((char*)addrCh, encodedLen);
-    char* result = new char[encodedLen + 1]; // +1 for null terminator
-    strncpy(result, (char*)addrCh, encodedLen);
-    result[encodedLen] = '\0';
+    // Allocate memory for the result address string and return it
+    char* address = new char[encodedLen + 1]; // +1 for null terminator
+    strncpy(address, (char*)result, encodedLen);
+    address[encodedLen] = '\0';
 
-    return result;
+    return address;
 }
+
+// char* getAddrFromPublicKey(RobonomicsPublicKey &pubKey) {
+//     unsigned char plainAddr[SR25519_PUBLIC_SIZE + 3] = {ROBONOMICS_PREFIX};
+//     // unsigned char plainAddr[SR25519_PUBLIC_SIZE + 3] = {VARA_PREFIX};
+//     memcpy(plainAddr + 1, pubKey.bytes, SR25519_PUBLIC_SIZE);
+
+//     uint8_t ssPrefixed[SR25519_PUBLIC_SIZE + 8] = {0x53, 0x53, 0x35, 0x38, 0x50, 0x52, 0x45};
+//     memcpy(ssPrefixed + 7, plainAddr, SR25519_PUBLIC_SIZE + 1);
+
+//     unsigned char blake2bHashed[64] = {0};
+//     blake2(blake2bHashed, 64, ssPrefixed, SR25519_PUBLIC_SIZE + 8, NULL, 0);
+//     plainAddr[1 + PUBLIC_KEY_LENGTH] = blake2bHashed[0];
+//     plainAddr[2 + PUBLIC_KEY_LENGTH] = blake2bHashed[1];
+
+//     unsigned char addrCh[SR25519_PUBLIC_SIZE * 2] = {0};
+
+//     int encodedLen = EncodeBase58(plainAddr, SR25519_PUBLIC_SIZE + 3, addrCh);
+
+//     // std::string result((char*)addrCh, encodedLen);
+//     char* result = new char[encodedLen + 1]; // +1 for null terminator
+//     strncpy(result, (char*)addrCh, encodedLen);
+//     result[encodedLen] = '\0';
+
+//     return result;
+// }
 
 char* getAddrFromPrivateKey(uint8_t *private_key) {
     uint8_t robonomicsPublicKey[32];
