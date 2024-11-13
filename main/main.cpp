@@ -1,16 +1,16 @@
-/*
- * SPDX-FileCopyrightText: 2021-2022 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: CC0-1.0
- *
- * Zigbee HA_on_off_light Example
- *
- * This example code is in the Public Domain (or CC0 licensed, at your option.)
- *
- * Unless required by applicable law or agreed to in writing, this
- * software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
- * CONDITIONS OF ANY KIND, either express or implied.
- */
+// /*
+//  * SPDX-FileCopyrightText: 2021-2022 Espressif Systems (Shanghai) CO LTD
+//  *
+//  * SPDX-License-Identifier: CC0-1.0
+//  *
+//  * Zigbee HA_on_off_light Example
+//  *
+//  * This example code is in the Public Domain (or CC0 licensed, at your option.)
+//  *
+//  * Unless required by applicable law or agreed to in writing, this
+//  * software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+//  * CONDITIONS OF ANY KIND, either express or implied.
+//  */
 #include "main.h"
 #include "esp_check.h"
 #include "esp_log.h"
@@ -30,6 +30,16 @@
 #include "driver/gpio.h"
 #include "utils/battery_utils.h"
 
+#include "esp_sleep.h"
+#include "esp_system.h"
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
+#include <sys/time.h>
+#include "esp_timer.h"
+
 
 #if !defined ZB_ED_ROLE
 #error Define ZB_ED_ROLE in idf.py menuconfig to compile light (End Device) source code.
@@ -40,7 +50,21 @@ static const char *TAG = "ESP_ZB_ON_OFF_LIGHT";
 Robonomics robonomics;
 float happiness = 0;
 int lcd_brightness = 30;
+bool reset_device = false;
 // WiFiCredentials wifi_creds;
+
+void send_vara_message() {
+    WiFi.begin(user_data.ssid, user_data.password);
+    while ( WiFi.status() != WL_CONNECTED ) {
+        vTaskDelay(500 /portTICK_PERIOD_MS);
+        ESP_LOGI(TAG, "." );
+    }
+    robonomics.setup();
+    robonomics.sendCustomCall();
+    // robonomics.sendRWSDatalogRecord("Happiness is 100%%!", user_data.owner_address.c_str());
+    robonomics.disconnectWebsocket();
+    WiFi.disconnect(true);
+}
 
 esp_err_t esp_zcl_utility_add_ep_basic_manufacturer_info(esp_zb_ep_list_t *ep_list, uint8_t endpoint_id, zcl_basic_manufacturer_info_t *info)
 {
@@ -126,6 +150,7 @@ static esp_err_t zb_attribute_handler(const esp_zb_zcl_set_attr_value_message_t 
             if (message->attribute.id == ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID && message->attribute.data.type == ESP_ZB_ZCL_ATTR_TYPE_BOOL) {
                 light_state = message->attribute.data.value ? *(bool *)message->attribute.data.value : light_state;
                 ESP_LOGI(TAG, "Light sets to %s", light_state ? "On" : "Off");
+                send_vara_message();
                 // light_driver_set_power(light_state);
             }
         }
@@ -186,9 +211,19 @@ static void send_datalog_happiness_full() {
         ESP_LOGI(TAG, "." );
     }
     robonomics.setup();
+    // robonomics.sendCustomCall();
     robonomics.sendRWSDatalogRecord("Happiness is 100%%!", user_data.owner_address.c_str());
     robonomics.disconnectWebsocket();
     WiFi.disconnect(true);
+}
+
+static void vara_task(void *pvParameters) {
+    while (1)
+    {
+        send_vara_message();
+        vTaskDelay(10000 /portTICK_PERIOD_MS);
+    }
+    
 }
 
 static void happiness_manage_task(void *pvParameters) {
@@ -219,13 +254,13 @@ static void happiness_manage_task(void *pvParameters) {
 void get_or_generate_private_key(uint8_t *robonomicsPrivateKey) {
     char* robonomicsSs58Address;
     esp_err_t ret;
-    ret = read_blob_from_nvs(ROBONOMICS_PRIVATE_KEY_NVS_KEY, robonomicsPrivateKey, sizeof(robonomicsPrivateKey));
+    ret = read_blob_from_nvs(ROBONOMICS_PRIVATE_KEY_NVS_KEY, robonomicsPrivateKey, PRIVATE_KEY_LENGTH);
     if (ret == ESP_OK) {
         robonomicsSs58Address = getAddrFromPrivateKey(robonomicsPrivateKey);
         ESP_LOGI(TAG, "Robonomics Address: %s", robonomicsSs58Address);
     } else {
         Ed25519::generatePrivateKey(robonomicsPrivateKey);
-        write_blob_to_nvs(ROBONOMICS_PRIVATE_KEY_NVS_KEY, robonomicsPrivateKey, sizeof(robonomicsPrivateKey));
+        write_blob_to_nvs(ROBONOMICS_PRIVATE_KEY_NVS_KEY, robonomicsPrivateKey, PRIVATE_KEY_LENGTH);
         robonomicsSs58Address = getAddrFromPrivateKey(robonomicsPrivateKey);
         ESP_LOGI(TAG, "Robonomics Address: %s", robonomicsSs58Address);
     }
@@ -259,11 +294,18 @@ void get_wifi_creds() {
 
 static void battery_task(void *pvParameters) {
     unsigned int battery_level;
-    while (0) {
-        vTaskDelay(pdMS_TO_TICKS(5000));
+    while (1) {
         battery_level = getBatteryState();
+        set_lcd_battery(battery_level);
         ESP_LOGI(TAG, "Battery: %d", battery_level);
+        vTaskDelay(pdMS_TO_TICKS(5000));
     }
+}
+
+void setup_display() {
+    BK_Light(50);
+    LVGL_Init();
+    Lvgl_Example1();
 }
 
 static void lcd_task(void *pvParameters) {
@@ -276,19 +318,72 @@ static void lcd_task(void *pvParameters) {
     }
 }
 
+void example_wait_gpio_inactive(void)
+{
+    printf("Waiting for GPIO%d to go high...\n", GPIO_WAKEUP_NUM);
+    while (gpio_get_level(GPIO_WAKEUP_NUM) == GPIO_WAKEUP_LEVEL) {
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+}
+
+esp_err_t register_gpio_wakeup(void)
+{
+    /* Initialize GPIO */
+    gpio_config_t config = {
+            .pin_bit_mask = BIT64(GPIO_WAKEUP_NUM),
+            .mode = GPIO_MODE_INPUT,
+            .pull_up_en = GPIO_PULLUP_DISABLE,
+            .pull_down_en = GPIO_PULLDOWN_DISABLE,
+            .intr_type = GPIO_INTR_DISABLE
+    };
+    ESP_RETURN_ON_ERROR(gpio_config(&config), TAG, "Initialize GPIO%d failed", GPIO_WAKEUP_NUM);
+
+    /* Enable wake up from GPIO */
+    ESP_RETURN_ON_ERROR(gpio_wakeup_enable(GPIO_WAKEUP_NUM, GPIO_WAKEUP_LEVEL == 0 ? GPIO_INTR_LOW_LEVEL : GPIO_INTR_HIGH_LEVEL),
+                        TAG, "Enable gpio wakeup failed");
+    ESP_RETURN_ON_ERROR(esp_sleep_enable_gpio_wakeup(), TAG, "Configure gpio as wakeup source failed");
+
+    /* Make sure the GPIO is inactive and it won't trigger wakeup immediately */
+    // example_wait_gpio_inactive();
+    ESP_LOGI(TAG, "gpio wakeup source is ready");
+
+    return ESP_OK;
+}
+
 void setup_button() {
     gpio_set_direction(BUTTON_GPIO, GPIO_MODE_INPUT);
 }
 
+void reset_device_handle() {
+    // reset_device = true;
+    ESP_ERROR_CHECK(nvs_flash_erase());
+    vTaskDelay(pdMS_TO_TICKS(100));
+    esp_zb_factory_reset();
+    esp_restart();
+}
+
 void button_pressed_handle() {
-    if (lcd_brightness == 0) {
-        lcd_brightness = 30;
-        RGB_turn_on();
-    } else {
-        lcd_brightness = 0;
-        RGB_turn_off();
-    }
+    example_wait_gpio_inactive();
+    ESP_LOGI(TAG, "Go to sleep mode");
+    RGB_turn_off();
+    lcd_brightness = 0;
     set_brightness(lcd_brightness);
+    uart_wait_tx_idle_polling(CONFIG_ESP_CONSOLE_UART_NUM);
+    esp_light_sleep_start();
+    vTaskDelay(pdMS_TO_TICKS(10));
+    esp_restart();
+    // RGB_turn_on();
+    // setup_display();
+    // ESP_LOGI(TAG, "After sleep mode");
+    // uart_wait_tx_idle_polling(CONFIG_ESP_CONSOLE_UART_NUM);
+    // if (lcd_brightness == 0) {
+    //     lcd_brightness = 30;
+    //     RGB_turn_on();
+    // } else {
+    //     lcd_brightness = 0;
+    //     RGB_turn_off();
+    // }
+    // set_brightness(lcd_brightness);
 }
 
 void button_task(void *pvParameters) {
@@ -301,18 +396,15 @@ void button_task(void *pvParameters) {
         button_level = gpio_get_level(BUTTON_GPIO);
         // ESP_LOGI(TAG, "GPIO Level: %d", button_level);
         if (button_level == 0) {
-            if (button_level_prev == 1) {
-                button_pressed_count++;
-            } else if (button_pressed_count < 30) {
-                button_pressed_count++;
-            } else {
-                if (!button_handled) {
-                    button_pressed_handle();
-                }
-                button_handled = true;
-                button_pressed_count = 0;
+            button_pressed_count++;
+            if (button_pressed_count > 300) {
+                ESP_LOGI(TAG, "Reset device");
+                reset_device_handle();
             }
-        } else {
+        } else if (button_level_prev == 0) {
+            if (button_pressed_count > 15) {
+                button_pressed_handle();
+            }
             button_handled = false;
             button_pressed_count = 0;
         }
@@ -329,6 +421,10 @@ extern "C" void app_main(void)
         ret = nvs_flash_init();
     }
     ESP_ERROR_CHECK(ret);
+    RGB_Init();
+    RGB_Example();
+    LCD_Init();
+    setup_display();
     uint8_t robonomicsPrivateKey[PRIVATE_KEY_LENGTH];
     int happiness_int;
     ret = read_int_from_nvs(HAPPINESS_NVS_KEY, & happiness_int);
@@ -340,13 +436,9 @@ extern "C" void app_main(void)
     get_or_generate_private_key(robonomicsPrivateKey);
     robonomics.setPrivateKey(robonomicsPrivateKey);
     get_wifi_creds();
-    // setupBatteryMeter();
-    RGB_Init();
-    RGB_Example();
-    LCD_Init();
-    BK_Light(50);
-    LVGL_Init();
-    Lvgl_Example1();
+    setupBatteryMeter();
+    register_gpio_wakeup();
+    // send_datalog_happiness_full();
     esp_zb_platform_config_t config = {
         .radio_config = ESP_ZB_DEFAULT_RADIO_CONFIG(),
         .host_config = ESP_ZB_DEFAULT_HOST_CONFIG(),
@@ -356,6 +448,8 @@ extern "C" void app_main(void)
     esp_coex_wifi_i154_enable();
     xTaskCreate(happiness_manage_task, "Happiness_manage", 8192, NULL, 6, NULL);
     xTaskCreate(lcd_task, "LCD_task", 2048, NULL, 7, NULL);
-    xTaskCreate(button_task, "Button_Task", 2048, NULL, 8, NULL);
-    // xTaskCreate(battery_task, "Battery_Task", 2048, NULL, 9, NULL);
+    xTaskCreate(button_task, "Button_Task", 4096, NULL, 8, NULL);
+    xTaskCreate(battery_task, "Battery_Task", 4096, NULL, 9, NULL);
+    // xTaskCreate(vara_task, "Vara_task", 8192, NULL, 10, NULL);
 }
+

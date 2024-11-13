@@ -39,6 +39,11 @@ esp_err_t read_blob_from_nvs(const char *key, uint8_t *private_key, size_t data_
             err = nvs_get_blob(my_handle, key, private_key, &data_length);
             if (err == ESP_OK) {
                 ESP_LOGI(TAG, "%s was read successfully", key);
+                printf("Retrieved data for %s: ", key);
+                for (size_t i = 0; i < data_length; i++) {
+                    printf("%02x ", private_key[i]);
+                }
+                printf("\n");
             } else {
                 ESP_LOGI(TAG, "Failed to read data: %s", esp_err_to_name(err));
             }

@@ -26,6 +26,11 @@ extern "C" {
 
 #define BUTTON_GPIO GPIO_NUM_9
 
+/* Use boot button as gpio input */
+#define GPIO_WAKEUP_NUM         BUTTON_GPIO
+/* "Boot" button is active low */
+#define GPIO_WAKEUP_LEVEL       0
+
 /* Zigbee configuration */
 #define INSTALLCODE_POLICY_ENABLE       false    /* enable the install code policy for security */
 #define ED_AGING_TIMEOUT                ESP_ZB_ED_AGING_TIMEOUT_64MIN

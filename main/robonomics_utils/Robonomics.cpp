@@ -30,6 +30,12 @@ const char* Robonomics::getSs58Address() const {
         return ss58Address;
 }
 
+void Robonomics::sendCustomCall() {
+    Data call = createCall();
+
+    createAndSendExtrinsic(call);
+}
+
 void Robonomics::sendDatalogRecord(std::string data) {
     Data head_dr_  = Data{0x33,0};
     Data call = callDatalogRecord(head_dr_, data);
@@ -71,42 +77,42 @@ Data Robonomics::createCall() {
     std::vector<uint8_t> callStr = hex2bytes(CALL_ENCODED);
     append(call, callStr);
     ESP_LOGI(TAG, "Call size: %zu", call.size());
-    // for (int k = 0; k < call.size(); k++) 
-    //     Serial.printf("%02x", call[k]);
-    // Serial.println("");
+    for (int k = 0; k < call.size(); k++) 
+        printf("%02x", call[k]);
+    printf("\r\n");
     return call;
 }
 
 Data Robonomics::createPayload(Data call, uint32_t era, uint64_t nonce, uint64_t tip, uint32_t sv, uint32_t tv, std::string gen, std::string block) {
     Data data_ = doPayload (call, era, nonce, tip, sv, tv, gen, block);
     ESP_LOGI(TAG, "Payload size: %zu", data_.size());
-    // for (int k = 0; k < data_.size(); k++) 
-    //     Serial.printf("%02x", data_[k]);
-    // Serial.println("");
+    for (int k = 0; k < data_.size(); k++) 
+        printf("%02x", data_[k]);
+    printf("\r\n");
     return data_;
 }
 
 Data Robonomics::createSignature(Data data, uint8_t privateKey[32], uint8_t publicKey[32]) {
     Data signature_ = doSign (data, privateKey, publicKey);
     ESP_LOGI(TAG, "Signature size: %zu", signature_.size());
-    // for (int k = 0; k < signature_.size(); k++) 
-    //     Serial.printf("%02x", signature_[k]);
-    // Serial.println("");
+    for (int k = 0; k < signature_.size(); k++) 
+        printf("%02x", signature_[k]);
+    printf("\r\n");
     return signature_;
 }
 
 Data Robonomics::createSignedExtrinsic(Data signature, Data pubKey, uint32_t era, uint64_t nonce, uint64_t tip, Data call) {
     Data edata_ = doEncode (signature, pubKey, era, nonce, tip, call);
     ESP_LOGI(TAG, "Extrinsic %s: size %zu", "Datalog", edata_.size());
-    // for (int k = 0; k < edata_.size(); k++) 
-    //     Serial.printf("%02x", edata_[k]);
-    // Serial.println("");
+    for (int k = 0; k < edata_.size(); k++) 
+        printf("%02x", edata_[k]);
+    printf("\r\n");
     return edata_;
 }
 
 void Robonomics::sendExtrinsic(Data extrinsicData, int requestId) {
     String extrinsicMessage = fillParamsJs(extrinsicData, requestId);
-    // Serial.println("After to string: ");
+    ESP_LOGI(TAG, "After to string: %s", extrinsicMessage.c_str());
     // Serial.print(extrinsicMessage);
     blockchainUtils.rpcRequest(extrinsicMessage);
     getExstrinsicResult();

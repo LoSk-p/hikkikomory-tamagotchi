@@ -29,5 +29,6 @@ public:
     void setPrivateKey(uint8_t *privateKey);
     void sendDatalogRecord(std::string data);
     void sendRWSDatalogRecord(std::string data, const char *owner_address);
+    void sendCustomCall();
     const char* getSs58Address() const;
 };

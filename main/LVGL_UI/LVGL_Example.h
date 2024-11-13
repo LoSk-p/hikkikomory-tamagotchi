@@ -17,6 +17,7 @@ extern "C" {
 void Lvgl_Example1(void);
 void set_angle(int32_t v);
 void set_brightness(int brightness);
+void set_lcd_battery(unsigned int v);
 
 #ifdef __cplusplus
 }
