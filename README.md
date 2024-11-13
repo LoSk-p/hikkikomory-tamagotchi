@@ -2,7 +2,7 @@
 
 Hikikomori is a software and hardware project to act like a digital pet of yours. You can think of it as a [tamagotchi toy](https://en.wikipedia.org/wiki/Tamagotchi) but it’s meant to be linked with your smart home system on [Home Assistant](https://www.home-assistant.io/) . When you interact with your smart home or an automation is triggered the Hikikomori gets happier. Also it’s able to interact with Robonomics and Vara networks - that’s where the soul of the toy lives. Hikikomori sends its digital copy to Robonomics from time to time. There is a logic of tamagotchi in Vara network, it’s used to make computations of the level of happiness
 
-Here’s the link to the tamagotchi smart contract from Vara network ЗДЕСЬ ССЫЛКА НА ТАМАГОЧИ 
+Here’s the link to the tamagotchi [smart contract from Vara network](https://idea.gear-tech.io/programs/0x8e5f2de1fea16db5a65d4e64bca1f8a709585853749b3572ff15487db2146771?node=wss%3A%2F%2Ftestnet.vara.network).
 
 The code is tested with a simple scenario of increasing the happiness level in Vara by sending messages from Hikikomori. Please have a look at the testing transaction and it’s output om [Polkadot.js Portal](https://polkadot.js.org/apps):
 
