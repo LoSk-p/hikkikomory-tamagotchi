@@ -6,8 +6,8 @@
 #define PRIVATE_KEY_LENGTH 32
 #define ADDRESS_LENGTH 49
 #define SR25519_PUBLIC_SIZE 32
-#define ROBONOMICS_PREFIX 0x20
-#define VARA_PREFIX 0x89
+#define ROBONOMICS_PREFIX 32
+#define VARA_PREFIX 137
 
 // #ifdef __cplusplus
 // extern "C" {
@@ -18,8 +18,8 @@ typedef struct RobonomicsPublicKey { unsigned char bytes[PUBLIC_KEY_LENGTH]; } R
 typedef struct Address { unsigned char symbols[ADDRESS_LENGTH]; } Address;
 
 static int EncodeBase58(const unsigned char *bytes, int len, unsigned char result[]);
-static char* getAddrFromPublicKey(RobonomicsPublicKey &pubKey);
-char* getAddrFromPrivateKey(uint8_t *private_key);
+static char* getAddrFromPublicKey(RobonomicsPublicKey &pubKey, uint16_t prefix);
+char* getAddrFromPrivateKey(uint8_t *private_key, uint16_t prefix);
 RobonomicsPublicKey getPublicKeyFromAddr(const char *addrStr);
 
 // #ifdef __cplusplus

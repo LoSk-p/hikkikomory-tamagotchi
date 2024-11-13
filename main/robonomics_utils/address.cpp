@@ -66,10 +66,8 @@ int DecodeBase58(const unsigned char *str, int len, unsigned char *result) {
     return resultlen;
 }
 
-char* getAddrFromPublicKey(RobonomicsPublicKey &pubKey) {
-    // Prepare the prefix as two bytes
-    // Prepare the prefix as two bytes
-    uint16_t prefix = 137;
+char* getAddrFromPublicKey(RobonomicsPublicKey &pubKey, uint16_t prefix) {
+    // uint16_t prefix = 137;
     unsigned char prefixData[2] = {0};
     uint16_t fullPrefix = 0x4000 | ((prefix >> 8) & 0x3F) | ((prefix & 0xFF) << 6);
     prefixData[0] = fullPrefix >> 8;
@@ -103,37 +101,12 @@ char* getAddrFromPublicKey(RobonomicsPublicKey &pubKey) {
     return address;
 }
 
-// char* getAddrFromPublicKey(RobonomicsPublicKey &pubKey) {
-//     unsigned char plainAddr[SR25519_PUBLIC_SIZE + 3] = {ROBONOMICS_PREFIX};
-//     // unsigned char plainAddr[SR25519_PUBLIC_SIZE + 3] = {VARA_PREFIX};
-//     memcpy(plainAddr + 1, pubKey.bytes, SR25519_PUBLIC_SIZE);
-
-//     uint8_t ssPrefixed[SR25519_PUBLIC_SIZE + 8] = {0x53, 0x53, 0x35, 0x38, 0x50, 0x52, 0x45};
-//     memcpy(ssPrefixed + 7, plainAddr, SR25519_PUBLIC_SIZE + 1);
-
-//     unsigned char blake2bHashed[64] = {0};
-//     blake2(blake2bHashed, 64, ssPrefixed, SR25519_PUBLIC_SIZE + 8, NULL, 0);
-//     plainAddr[1 + PUBLIC_KEY_LENGTH] = blake2bHashed[0];
-//     plainAddr[2 + PUBLIC_KEY_LENGTH] = blake2bHashed[1];
-
-//     unsigned char addrCh[SR25519_PUBLIC_SIZE * 2] = {0};
-
-//     int encodedLen = EncodeBase58(plainAddr, SR25519_PUBLIC_SIZE + 3, addrCh);
-
-//     // std::string result((char*)addrCh, encodedLen);
-//     char* result = new char[encodedLen + 1]; // +1 for null terminator
-//     strncpy(result, (char*)addrCh, encodedLen);
-//     result[encodedLen] = '\0';
-
-//     return result;
-// }
-
-char* getAddrFromPrivateKey(uint8_t *private_key) {
+char* getAddrFromPrivateKey(uint8_t *private_key, uint16_t prefix) {
     uint8_t robonomicsPublicKey[32];
     RobonomicsPublicKey public_key;
     Ed25519::derivePublicKey(robonomicsPublicKey, private_key);
     memcpy(public_key.bytes, robonomicsPublicKey, PUBLIC_KEY_LENGTH);
-    char* robonomicsSs58Address = getAddrFromPublicKey(public_key);
+    char* robonomicsSs58Address = getAddrFromPublicKey(public_key, prefix);
     return robonomicsSs58Address;
 }
 

@@ -13,8 +13,8 @@ void WebsocketUtilsRobonomics::websocketSendMessage(String text) {
     webSocket.sendTXT(text);
 }
 
-void WebsocketUtilsRobonomics::setupWebsocket() {
-    webSocket.beginSSL(WS_SERVER_HOST, WS_SERVER_PORT, "/");
+void WebsocketUtilsRobonomics::setupWebsocket(const char* wsHost) {
+    webSocket.beginSSL(wsHost, WS_SERVER_PORT, "/");
     connectWebscoket();
 }
 

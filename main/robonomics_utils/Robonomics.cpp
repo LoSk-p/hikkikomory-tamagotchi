@@ -5,8 +5,12 @@
 
 static const char *TAG = "ROBONOMICS";
 
+Robonomics::Robonomics(const NetworkConfig& config) {
+    networkConfig = config
+}
+
 void Robonomics::setup() {
-    blockchainUtils.setup();
+    blockchainUtils.setup(networkConfig->wsHost);
 }
 
 void Robonomics::disconnectWebsocket() {
@@ -15,12 +19,12 @@ void Robonomics::disconnectWebsocket() {
 
 void Robonomics::setPrivateKey(uint8_t *privateKey) {
     memcpy(privateKey_, privateKey, KEYS_SIZE);
-    char* tempAddress = getAddrFromPrivateKey(privateKey_);
+    char* tempAddress = getAddrFromPrivateKey(privateKey_, networkConfig->addressPrefix);
     if (tempAddress != nullptr) {
-        strncpy(ss58Address, tempAddress, SS58_ADDRESS_SIZE); // Leave space for null terminator
-        ss58Address[SS58_ADDRESS_SIZE] = '\0'; // Ensure null termination
+        strncpy(ss58Address.data(), tempAddress, networkConfig.addressSize);
+        ss58Address[networkConfig.addressSize] = '\0'; // Ensure null termination
         delete[] tempAddress;
-        ESP_LOGI(TAG, "Robonomics Address: %s", ss58Address);
+        ESP_LOGI(TAG, "Robonomics Address: %s", ss58Address.data());
     } else {
         ESP_LOGE(TAG, "Failed to get address from public key.");
     }
@@ -56,8 +60,9 @@ void Robonomics::sendRWSDatalogRecord(std::string data, const char *owner_addres
 void Robonomics::createAndSendExtrinsic(Data call) {
     Ed25519::derivePublicKey(publicKey_, privateKey_);
 
-    uint64_t payloadNonce = getNonce(& blockchainUtils, ss58Address);
-    std::string payloadBlockHash = getGenesisBlockHash();
+    uint64_t payloadNonce = getNonce(& blockchainUtils, ss58Address.data());
+    // std::string payloadBlockHash = getGenesisBlockHash();
+    std::string payloadBlockHash = networkConfig->genesisBlockHash;
     uint32_t payloadEra = getEra();
     uint64_t payloadTip = getTip();
     JSONVar runtimeInfo = getRuntimeInfo(& blockchainUtils);

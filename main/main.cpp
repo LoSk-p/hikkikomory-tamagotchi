@@ -256,13 +256,17 @@ void get_or_generate_private_key(uint8_t *robonomicsPrivateKey) {
     esp_err_t ret;
     ret = read_blob_from_nvs(ROBONOMICS_PRIVATE_KEY_NVS_KEY, robonomicsPrivateKey, PRIVATE_KEY_LENGTH);
     if (ret == ESP_OK) {
-        robonomicsSs58Address = getAddrFromPrivateKey(robonomicsPrivateKey);
+        robonomicsSs58Address = getAddrFromPrivateKey(robonomicsPrivateKey, ROBONOMICS_PREFIX);
         ESP_LOGI(TAG, "Robonomics Address: %s", robonomicsSs58Address);
+        robonomicsSs58Address = getAddrFromPrivateKey(robonomicsPrivateKey, VARA_PREFIX);
+        ESP_LOGI(TAG, "Vara Address: %s", robonomicsSs58Address);
     } else {
         Ed25519::generatePrivateKey(robonomicsPrivateKey);
         write_blob_to_nvs(ROBONOMICS_PRIVATE_KEY_NVS_KEY, robonomicsPrivateKey, PRIVATE_KEY_LENGTH);
-        robonomicsSs58Address = getAddrFromPrivateKey(robonomicsPrivateKey);
+        robonomicsSs58Address = getAddrFromPrivateKey(robonomicsPrivateKey, ROBONOMICS_PREFIX);
         ESP_LOGI(TAG, "Robonomics Address: %s", robonomicsSs58Address);
+        robonomicsSs58Address = getAddrFromPrivateKey(robonomicsPrivateKey, VARA_PREFIX);
+        ESP_LOGI(TAG, "Vara Address: %s", robonomicsSs58Address);
     }
     delete[] robonomicsSs58Address;
 }

@@ -16,7 +16,7 @@ public:
     void websocketLoop();
     void disconnect();
     void websocketSendMessage(String text);
-    void setupWebsocket();
+    void setupWebsocket(const char* wsHost);
     void disconnectWebSocket();
     void connectWebscoket();
     void setOnTextCallback(OnTextWebsocketCallback callback);

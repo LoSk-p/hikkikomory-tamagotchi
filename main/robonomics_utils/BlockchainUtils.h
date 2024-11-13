@@ -10,7 +10,7 @@ private:
     int requestId = 1;
     WebsocketUtilsRobonomics wsUtils;
 public:
-    void setup();
+    void setup(const char* wsHost);
     void disconnectWebsocket();
     int getRequestId();
     void rpcRequest(String Xthal_dataram_vaddr);

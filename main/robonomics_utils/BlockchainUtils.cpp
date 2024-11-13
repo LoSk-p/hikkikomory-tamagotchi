@@ -1,7 +1,7 @@
 #include "BlockchainUtils.h"
 
-void BlockchainUtils::setup() {
-    wsUtils.setupWebsocket();
+void BlockchainUtils::setup(const char* wsHost) {
+    wsUtils.setupWebsocket(wsHost);
 }
 
 void BlockchainUtils::disconnectWebsocket() {
