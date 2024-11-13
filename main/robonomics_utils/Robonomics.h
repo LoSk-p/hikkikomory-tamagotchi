@@ -14,23 +14,12 @@ struct NetworkConfig {
     std::string genesisBlockHash;
 };
 
-NetworkConfig robonomicsConfig = {
-    "kusama.rpc.robonomics.network",
-    48,
-    32,
-    "631ccc82a078481584041656af292834e1ae6daab61d2875b4dd0c14bb9b17bc"
-};
-
-NetworkConfig varaConfig = {
-    "testnet.vara.network",
-    49,
-    137,
-    "525639f713f397dcf839bd022cd821f367ebcf179de7b9253531f8adbe5436d6" 
-};
+extern NetworkConfig robonomicsConfig;
+extern NetworkConfig varaConfig;
 
 class Robonomics {
 private:
-    NetworkConfig *networkConfig;
+    const NetworkConfig *networkConfig;
     BlockchainUtils blockchainUtils;
     uint8_t publicKey_[KEYS_SIZE];
     uint8_t privateKey_[KEYS_SIZE];

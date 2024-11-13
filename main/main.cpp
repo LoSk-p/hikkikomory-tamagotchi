@@ -47,11 +47,25 @@
 
 static const char *TAG = "ESP_ZB_ON_OFF_LIGHT";
 
-Robonomics robonomics;
+Robonomics robonomics(robonomicsConfig);
+Robonomics vara(varaConfig);
 float happiness = 0;
 int lcd_brightness = 30;
 bool reset_device = false;
 // WiFiCredentials wifi_creds;
+
+static void send_vara_message() {
+    WiFi.begin(user_data.ssid, user_data.password);
+    while ( WiFi.status() != WL_CONNECTED ) {
+        vTaskDelay(500 /portTICK_PERIOD_MS);
+        ESP_LOGI(TAG, "." );
+    }
+    vara.setup();
+    vara.sendCustomCall();
+    // robonomics.sendRWSDatalogRecord("Happiness is 100%%!", user_data.owner_address.c_str());
+    vara.disconnectWebsocket();
+    WiFi.disconnect(true);
+}
 
 esp_err_t esp_zcl_utility_add_ep_basic_manufacturer_info(esp_zb_ep_list_t *ep_list, uint8_t endpoint_id, zcl_basic_manufacturer_info_t *info)
 {
@@ -204,27 +218,14 @@ static void send_datalog_happiness_full() {
     WiFi.disconnect(true);
 }
 
-static void send_vara_message() {
-    WiFi.begin(user_data.ssid, user_data.password);
-    while ( WiFi.status() != WL_CONNECTED ) {
-        vTaskDelay(500 /portTICK_PERIOD_MS);
-        ESP_LOGI(TAG, "." );
+static void vara_task(void *pvParameters) {
+    while (1)
+    {
+        send_vara_message();
+        vTaskDelay(10000 /portTICK_PERIOD_MS);
     }
-    robonomics.setup();
-    robonomics.sendCustomCall();
-    // robonomics.sendRWSDatalogRecord("Happiness is 100%%!", user_data.owner_address.c_str());
-    robonomics.disconnectWebsocket();
-    WiFi.disconnect(true);
-}
-
-// static void vara_task(void *pvParameters) {
-//     while (1)
-//     {
-//         send_vara_message();
-//         vTaskDelay(10000 /portTICK_PERIOD_MS);
-//     }
     
-// }
+}
 
 static void happiness_manage_task(void *pvParameters) {
     uint16_t counter_decrease = 0;
@@ -439,11 +440,11 @@ extern "C" void app_main(void)
     }
     get_or_generate_private_key(robonomicsPrivateKey);
     robonomics.setPrivateKey(robonomicsPrivateKey);
+    vara.setPrivateKey(robonomicsPrivateKey);
     get_wifi_creds();
     setupBatteryMeter();
     register_gpio_wakeup();
     // send_datalog_happiness_full();
-    // xTaskCreate(vara_task, "Vara_task", 8192, NULL, 5, NULL);
     esp_zb_platform_config_t config = {
         .radio_config = ESP_ZB_DEFAULT_RADIO_CONFIG(),
         .host_config = ESP_ZB_DEFAULT_HOST_CONFIG(),
@@ -455,5 +456,6 @@ extern "C" void app_main(void)
     xTaskCreate(lcd_task, "LCD_task", 2048, NULL, 7, NULL);
     xTaskCreate(button_task, "Button_Task", 4096, NULL, 8, NULL);
     xTaskCreate(battery_task, "Battery_Task", 4096, NULL, 9, NULL);
+    xTaskCreate(vara_task, "Vara_task", 8192, NULL, 10, NULL);
 }
 

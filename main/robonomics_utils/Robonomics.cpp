@@ -5,8 +5,9 @@
 
 static const char *TAG = "ROBONOMICS";
 
-Robonomics::Robonomics(const NetworkConfig& config) {
-    networkConfig = config
+
+Robonomics::Robonomics(const NetworkConfig& config) : networkConfig(&config) {
+    ss58Address.resize(networkConfig->addressSize + 1); // +1 for null terminator
 }
 
 void Robonomics::setup() {
@@ -21,8 +22,8 @@ void Robonomics::setPrivateKey(uint8_t *privateKey) {
     memcpy(privateKey_, privateKey, KEYS_SIZE);
     char* tempAddress = getAddrFromPrivateKey(privateKey_, networkConfig->addressPrefix);
     if (tempAddress != nullptr) {
-        strncpy(ss58Address.data(), tempAddress, networkConfig.addressSize);
-        ss58Address[networkConfig.addressSize] = '\0'; // Ensure null termination
+        strncpy(ss58Address.data(), tempAddress, networkConfig->addressSize);
+        ss58Address[networkConfig->addressSize] = '\0'; // Ensure null termination
         delete[] tempAddress;
         ESP_LOGI(TAG, "Robonomics Address: %s", ss58Address.data());
     } else {
@@ -31,7 +32,7 @@ void Robonomics::setPrivateKey(uint8_t *privateKey) {
 }
 
 const char* Robonomics::getSs58Address() const {
-        return ss58Address;
+        return ss58Address.data();
 }
 
 void Robonomics::sendCustomCall() {
@@ -68,7 +69,7 @@ void Robonomics::createAndSendExtrinsic(Data call) {
     JSONVar runtimeInfo = getRuntimeInfo(& blockchainUtils);
     uint32_t payloadSpecVersion = getSpecVersion(runtimeInfo);
     uint32_t payloadTransactionVersion = getTransactionVersion(runtimeInfo);
-    ESP_LOGI(TAG, "Spec version: %" PRIu32 ", tx version: %" PRIu32 ", nonce: %llu, era: %" PRIu32 ", tip: %llu", payloadSpecVersion, payloadTransactionVersion, (unsigned long long)payloadNonce, payloadEra, (unsigned long long)payloadTip);
+    ESP_LOGI(TAG, "Spec version: %" PRIu32 ", tx version: %" PRIu32 ", nonce: %llu, era: %" PRIu32 ", tip: %llu, genesis block: %s", payloadSpecVersion, payloadTransactionVersion, (unsigned long long)payloadNonce, payloadEra, (unsigned long long)payloadTip, payloadBlockHash.c_str());
     Data data_ = createPayload(call, payloadEra, payloadNonce, payloadTip, payloadSpecVersion, payloadTransactionVersion, payloadBlockHash, payloadBlockHash);
     Data signature_ = createSignature(data_, privateKey_, publicKey_);
     std::vector<std::uint8_t> pubKey( reinterpret_cast<std::uint8_t*>(std::begin(publicKey_)), reinterpret_cast<std::uint8_t*>(std::end(publicKey_)));
@@ -139,3 +140,17 @@ void Robonomics::getExstrinsicResultCallback(uint8_t *payload) {
     extrinsicResult = JSON.stringify(received_message["result"]);
     got_extrinsic_result = true;
 }
+
+NetworkConfig robonomicsConfig = {
+    "kusama.rpc.robonomics.network",
+    48,
+    32,
+    "631ccc82a078481584041656af292834e1ae6daab61d2875b4dd0c14bb9b17bc"
+};
+
+NetworkConfig varaConfig = {
+    "testnet.vara.network",
+    49,
+    137,
+    "525639f713f397dcf839bd022cd821f367ebcf179de7b9253531f8adbe5436d6" 
+};

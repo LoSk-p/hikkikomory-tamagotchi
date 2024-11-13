@@ -69,29 +69,33 @@ int DecodeBase58(const unsigned char *str, int len, unsigned char *result) {
 char* getAddrFromPublicKey(RobonomicsPublicKey &pubKey, uint16_t prefix) {
     // uint16_t prefix = 137;
     unsigned char prefixData[2] = {0};
-    uint16_t fullPrefix = 0x4000 | ((prefix >> 8) & 0x3F) | ((prefix & 0xFF) << 6);
-    prefixData[0] = fullPrefix >> 8;
-    prefixData[1] = fullPrefix & 0xFF;
+    if (prefix < 64) {
+        prefixData[0] = static_cast<unsigned char>(prefix);
+    } else {
+        uint16_t fullPrefix = 0x4000 | ((prefix >> 8) & 0x3F) | ((prefix & 0xFF) << 6);
+        prefixData[0] = fullPrefix >> 8;
+        prefixData[1] = fullPrefix & 0xFF;
+    }
 
     // Prepare the SS58 prefix and the public key
     unsigned char ssPrefixed[64] = {0};
     memcpy(ssPrefixed, "SS58PRE", 7);  // Add the "SS58PRE" prefix
-    memcpy(ssPrefixed + 7, prefixData, 2);  // Prefix
-    memcpy(ssPrefixed + 9, pubKey.bytes, PUBLIC_KEY_LENGTH);  // Public key
+    memcpy(ssPrefixed + 7, prefixData, (prefix < 64) ? 1 : 2);  // Prefix
+    memcpy(ssPrefixed + 7 + ((prefix < 64) ? 1 : 2), pubKey.bytes, PUBLIC_KEY_LENGTH);  // Public key
 
     // Hash with Blake2b to get the checksum using your blake2 function
     unsigned char checksum[64] = {0};
-    blake2(checksum, sizeof(checksum), ssPrefixed, 9 + PUBLIC_KEY_LENGTH, NULL, 0);  // hash the concatenation of the prefix and public key
+    blake2(checksum, sizeof(checksum), ssPrefixed, 7 + ((prefix < 64) ? 1 : 2) + PUBLIC_KEY_LENGTH, NULL, 0);
 
     // Prepare the raw address
     unsigned char rawAddress[64] = {0};
-    memcpy(rawAddress, prefixData, 2);
-    memcpy(rawAddress + 2, pubKey.bytes, PUBLIC_KEY_LENGTH);
-    memcpy(rawAddress + 34, checksum, 2);  // Add the first two bytes of the checksum
+    memcpy(rawAddress, prefixData, (prefix < 64) ? 1 : 2);
+    memcpy(rawAddress + ((prefix < 64) ? 1 : 2), pubKey.bytes, PUBLIC_KEY_LENGTH);
+    memcpy(rawAddress + ((prefix < 64) ? 1 : 2) + PUBLIC_KEY_LENGTH, checksum, 2);  // Add the first two bytes of the checksum
 
     // Base58 encode the raw address
     unsigned char result[64] = {0};
-    int encodedLen = EncodeBase58(rawAddress, 36, result);
+    int encodedLen = EncodeBase58(rawAddress, ((prefix < 64) ? 1 : 2) + PUBLIC_KEY_LENGTH + 2, result);
 
     // Allocate memory for the result address string and return it
     char* address = new char[encodedLen + 1]; // +1 for null terminator
