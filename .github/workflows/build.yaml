@@ -20,15 +20,21 @@ jobs:
     - name: Install ESP-IDF dependencies
       run: sudo apt-get install -y python3-pip git wget flex bison gperf python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
 
-    - name: Set up ESP-IDF
+    - name: Clone ESP-IDF
       run: |
         git clone --branch v5.1 --depth 1 https://github.com/espressif/esp-idf.git $HOME/esp-idf
-        python3 -m pip install --user -r $HOME/esp-idf/requirements.txt
-        echo "source $HOME/esp-idf/export.sh" >> $GITHUB_ENV
+
+    - name: Install ESP-IDF
+      run: |
+        cd $HOME/esp-idf
+        ./install.sh esp32
+
+    - name: Set up ESP-IDF environment
+      run: echo "source $HOME/esp-idf/export.sh" >> $GITHUB_ENV
 
     - name: Build ESP-IDF project
       run: |
         source $HOME/esp-idf/export.sh
         idf.py build
       env:
-        IDF_PATH: ${{ github.workspace }}/esp-idf
+        IDF_PATH: $HOME/esp-idf
