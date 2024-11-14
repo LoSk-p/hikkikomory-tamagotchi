@@ -29,9 +29,6 @@ jobs:
         cd $HOME/esp-idf
         ./install.sh esp32
 
-    - name: Set up ESP-IDF environment
-      run: echo "source $HOME/esp-idf/export.sh" >> $GITHUB_ENV
-
     - name: Build ESP-IDF project
       run: |
         source $HOME/esp-idf/export.sh
