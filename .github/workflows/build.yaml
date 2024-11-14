@@ -27,7 +27,7 @@ jobs:
     - name: Install ESP-IDF
       run: |
         cd $HOME/esp-idf
-        ./install.sh esp32
+        ./install.sh esp32c6
 
     - name: Build ESP-IDF project
       run: |
