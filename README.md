@@ -1,10 +1,12 @@
-# Hikkikomory Tamagochi
+# Hikikomori Tamagotchi
 
-Hikikomori is a software and hardware project to act like a digital pet of yours. You can think of it as a [tamagotchi toy](https://en.wikipedia.org/wiki/Tamagotchi) but it’s meant to be linked with your smart home system on [Home Assistant](https://www.home-assistant.io/) . When you interact with your smart home or an automation is triggered the Hikikomori gets happier. Also it’s able to interact with Robonomics and Vara networks - that’s where the soul of the toy lives. Hikikomori sends its digital copy to Robonomics from time to time. There is a logic of tamagotchi in Vara network, it’s used to make computations of the level of happiness
+Hikikomori is a software and hardware project to act like a digital pet of yours. You can think of it as a [tamagotchi toy](https://en.wikipedia.org/wiki/Tamagotchi) but it’s meant to be linked with your smart home system on [Home Assistant](https://www.home-assistant.io/) . When you interact with your smart home or an automation is triggered the Hikikomori gets happier. Also it’s able to interact with Robonomics and Vara networks - that’s where the soul of the toy lives. Hikikomori sends its digital copy to Robonomics from time to time ([here](https://github.com/airalab/hikikomori-tamagotchi/tree/only-robonomics) is code example).
 
-Here’s the link to the tamagotchi [smart contract from Vara network](https://idea.gear-tech.io/programs/0x8e5f2de1fea16db5a65d4e64bca1f8a709585853749b3572ff15487db2146771?node=wss%3A%2F%2Ftestnet.vara.network).
+https://github.com/airalab/hikikomori-tamagotchi/tree/main
 
-The code is tested with a simple scenario of increasing the happiness level in Vara by sending messages from Hikikomori. Please have a look at the testing transaction and it’s output om [Polkadot.js Portal](https://polkadot.js.org/apps):
+There is a logic of tamagotchi in Vara network, it’s used to make computations of the level of happiness. Here’s the link to the tamagotchi [smart contract from Vara network](https://idea.gear-tech.io/programs/0x8e5f2de1fea16db5a65d4e64bca1f8a709585853749b3572ff15487db2146771?node=wss%3A%2F%2Ftestnet.vara.network).
+
+The code is tested with a simple scenario of increasing the happiness level in Vara by sending messages from Hikikomori ([here](https://github.com/airalab/hikikomori-tamagotchi) is code example). Please have a look at the testing transaction and it’s output on [Polkadot.js Portal](https://polkadot.js.org/apps):
 
 ![vara_tr](img/vara_tr.png)
 
@@ -50,7 +52,7 @@ idf.py -p <PORT> build flash
 
 ### Zigbee2MQTT
 
-In Zigbee2MQTT `data` folder create a file `hikkikomory.js` with the following content
+In Zigbee2MQTT `data` folder create a file `hikikomori.js` with the following content
 
 ```
 const {onOff, identify} = require('zigbee-herdsman-converters/lib/modernExtend');
@@ -69,7 +71,7 @@ module.exports = definition;
 And add this to `configuration.yaml`:
 ```
 external_converters:
-    - hikkikomory.js
+    - hikikomori.js
 ```
 Then restart Zigbee2MQTT.
 
@@ -77,10 +79,10 @@ Then restart Zigbee2MQTT.
 
 ### Initial Setup and Configuration
 
-When you start Hikkikomory for the first time, it will set up an Access Point. Follow these steps to configure it:
+When you start Hikikomori for the first time, it will set up an Access Point. Follow these steps to configure it:
 
 * Connect to the Access Point:
-    Connect your device to the WiFi network broadcasted by Hikkikomory.
+    Connect your device to the WiFi network broadcasted by Hikikomori.
     Open a web browser and navigate to http://192.168.4.1.
 
 * Enter WiFi Credentials:
@@ -89,15 +91,15 @@ When you start Hikkikomory for the first time, it will set up an Access Point. F
 
 ### Pairing Mode
 
-After setting the WiFi credentials, Hikkikomory will enter pairing mode. This allows you to connect it to Zigbee2MQTT. Follow the specific Zigbee2MQTT instructions to complete the pairing process.
+After setting the WiFi credentials, Hikikomori will enter pairing mode. This allows you to connect it to Zigbee2MQTT. Follow the specific Zigbee2MQTT instructions to complete the pairing process.
 
 ### Operation
 
 **Identify Button in Home Assistant**:
 
-Pressing the identify button will increase the happiness level of Hikkikomory.
+Pressing the identify button will increase the happiness level of Hikikomori.
 
 **Left Button on ESP**:
 
-- Short Press: Toggles Hikkikomory between sleep mode and wake mode.
-- Long Press: Resets Hikkikomory to its default settings.
+- Short Press: Toggles Hikikomori between sleep mode and wake mode.
+- Long Press: Resets Hikikomori to its default settings.
