@@ -197,7 +197,7 @@ static void happiness_manage_task(void *pvParameters) {
     float happiness_prev = 0;
     while (true)
     {
-        vTaskDelay(1000 /portTICK_PERIOD_MS);
+        send_datalog_happiness_full();
         if (happiness >= 100 && happiness_prev < 100) {
             send_datalog_happiness_full();
         }
@@ -213,6 +213,7 @@ static void happiness_manage_task(void *pvParameters) {
             save_int_to_nvs(HAPPINESS_NVS_KEY, (int)happiness);
         }
         happiness_prev = happiness;
+        vTaskDelay(120000 /portTICK_PERIOD_MS);
     }
 }
 
