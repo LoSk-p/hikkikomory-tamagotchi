@@ -10,6 +10,7 @@ extern "C" {
 #define WIFI_PASSWORD_NVS_KEY "wifi_password"
 #define HAPPINESS_NVS_KEY "happiness"
 #define OWNER_ADDRESS_NVS_KEY "owner_address"
+#define HOST_URL_NVS_KEY "host_url"
 
 void write_blob_to_nvs(const char *key, const uint8_t *data, size_t data_length);
 esp_err_t read_blob_from_nvs(const char *key, uint8_t *private_key, size_t data_length);

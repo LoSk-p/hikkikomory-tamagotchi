@@ -13,10 +13,15 @@ extern "C" {
 
 #define EXAMPLE1_LVGL_TICK_PERIOD_MS  1000
 
-
-void Lvgl_Example1(void);
-void set_angle(int32_t v);
+// void lv_example_ui(void);
 void set_brightness(int brightness);
+void set_lcd_battery(unsigned int* v);
+void set_lcd_counter(uint16_t* v);
+void set_main_screen();
+void set_wifi_setup_screen();
+void set_sending_datalog_screen();
+void set_datalog_sent_screen(const char* tx_hash);
+bool is_current_screen_main();
 
 #ifdef __cplusplus
 }

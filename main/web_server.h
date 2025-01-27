@@ -6,6 +6,7 @@ struct UserData {
     String ssid;
     String password;
     String owner_address;
+    String host_url;
 };
 
 extern UserData user_data;

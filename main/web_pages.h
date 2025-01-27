@@ -37,7 +37,7 @@ String generateHtmlContent(const char* robonomicsSs58Address) {
             color: #555; /* Gray color for the SS58 address */
             font-size: 16px; /* Keep the original size for the address */
         }
-        input[type="text"], input[type="password"] {
+        input[type="text"], input[type="password"], select {
             width: calc(100% - 20px); /* Adjust width for padding */
             padding: 12px; /* Increased padding for inputs */
             margin: 10px 0;
@@ -66,6 +66,11 @@ String generateHtmlContent(const char* robonomicsSs58Address) {
             SSID: <input type="text" name="ssid" required><br>
             Password: <input type="password" name="password" required><br>
             RWS Owner Address: <input type="text" name="rws_owner_address" required><br>
+            Host URL: 
+            <select name="host_url" required>
+                <option value="polkadot.rpc.robonomics.network">polkadot.rpc.robonomics.network</option>
+                <option value="kusama.rpc.robonomics.network">kusama.rpc.robonomics.network</option>
+            </select><br>
             <input type="submit" value="Save">
         </form>
         <h1>Robonomics SS58 Address</h1>

@@ -26,11 +26,13 @@ void handleSave() {
     user_data.ssid = server.arg("ssid");
     user_data.password = server.arg("password");
     user_data.owner_address = server.arg("rws_owner_address");
+    user_data.host_url = server.arg("host_url");
 
     // Log the received SSID and password
     ESP_LOGI(TAG, "Received SSID: %s", user_data.ssid.c_str());
     ESP_LOGI(TAG, "Received Password: %s", user_data.password.c_str());
     ESP_LOGI(TAG, "RWS Owner Address: %s", user_data.owner_address.c_str());
+    ESP_LOGI(TAG, "Host Url: %s", user_data.host_url.c_str());
     credentials_received = true;
 
     // Send a response back to the client

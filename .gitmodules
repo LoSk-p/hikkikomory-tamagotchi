@@ -2,3 +2,6 @@
 	path = components/esp-robonomics-client
 	url = https://github.com/LoSk-p/esp-robonomics-client.git
 	branch = esp-idf
+[submodule "components/arduino"]
+	path = components/arduino
+	url = https://github.com/espressif/arduino-esp32
