@@ -1,0 +1,4 @@
+[submodule "components/esp-robonomics-client"]
+	path = components/esp-robonomics-client
+	url = https://github.com/LoSk-p/esp-robonomics-client.git
+	branch = esp-idf
