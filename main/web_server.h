@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-#define AP_SSID "ESP32-Access-Point"
+#define AP_SSID "Hikkikomory-Tamagotchi"
 
 struct UserData {
     String ssid;
