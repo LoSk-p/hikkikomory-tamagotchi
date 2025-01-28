@@ -232,6 +232,14 @@ void set_datalog_sent_screen(const char* tx_hash) {
 
     lv_obj_t *screen = lv_obj_create(NULL);
 
+    lv_color_t bg_color = lv_palette_lighten(LV_PALETTE_LIGHT_BLUE, 5);
+    lv_color_t fg_color = lv_palette_darken(LV_PALETTE_BLUE, 4);
+
+    // /*Set data*/
+    const char * data = "https://robonomics.subscan.io/extrinsic/";
+    char result[128]; // Ensure this is large enough for both strings
+    snprintf(result, sizeof(result), "%s%s", data, tx_hash);
+
     // Create a container to center both labels together
     lv_obj_t *container = lv_obj_create(screen);
     lv_obj_set_layout(container, LV_LAYOUT_FLEX); // Use flex layout for vertical alignment
@@ -243,18 +251,20 @@ void set_datalog_sent_screen(const char* tx_hash) {
     // Set explicit size for the container (e.g., 100% of the screen size)
     lv_obj_set_size(container, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL));
 
-    // // Hide the container (make it invisible)
-    // lv_obj_add_flag(container, LV_OBJ_FLAG_HIDDEN);
-
     // Create the first label and add it to the container
     lv_obj_t *label_text = lv_label_create(container);
     lv_label_set_text(label_text, "Datalog was sent");
 
-    // Create the second label (tx_hash) and add it to the container
-    lv_obj_t *label_tx_hash = lv_label_create(container);
-    lv_label_set_text(label_tx_hash, tx_hash);
-    lv_label_set_long_mode(label_tx_hash, LV_LABEL_LONG_WRAP); // Enable text wrapping
-    lv_obj_set_width(label_tx_hash, lv_pct(90));              // Set width to 90% of the container
+    /*Create a 100x100 QR code*/
+    lv_obj_t * qr = lv_qrcode_create(container, 140, lv_color_hex3(0x33f), lv_color_hex3(0xeef));
+
+    /*Set data*/
+    lv_qrcode_update(qr, result, strlen(result));
+    lv_obj_center(qr);
+
+    /*Add a border with bg_color*/
+    lv_obj_set_style_border_color(qr, bg_color, 0);
+    lv_obj_set_style_border_width(qr, 5, 0);
 
     // Create the battery label
     create_battery_label(screen);
@@ -262,37 +272,3 @@ void set_datalog_sent_screen(const char* tx_hash) {
     // Load the screen
     lv_scr_load(screen);
 }
-
-
-// // Function to switch between screens
-// void switch_screen(int screen_id) {
-//     // lv_obj_t *screen = lv_obj_create(NULL);
-
-//     switch (screen_id) {
-//         case 1: set_main_screen(); break;
-//         case 2: create_screen2(); break;
-//         case 3: create_screen3(); break;
-//         case 4: create_screen4(); break;
-//         default: return;
-//     }
-
-// }
-
-// void lv_example_ui(void) {
-//     set_brightness(30); // Set display brightness
-
-//     // Start with screen 1
-//     switch_screen(1);
-
-//     // Example to switch screens after certain actions
-//     // Uncomment to test:
-//     vTaskDelay(pdMS_TO_TICKS(3000)); 
-//     ESP_LOGI(TAG, "Screen 2");
-//     switch_screen(2);
-//     vTaskDelay(pdMS_TO_TICKS(3000)); 
-//     ESP_LOGI(TAG, "Screen 3");
-//     switch_screen(3);
-//     vTaskDelay(pdMS_TO_TICKS(3000)); 
-//     ESP_LOGI(TAG, "Screen 4");
-//     switch_screen(4);
-// }
