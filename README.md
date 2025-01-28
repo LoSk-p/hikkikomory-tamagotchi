@@ -20,7 +20,7 @@ Then upload files from the [builds](./builds) folder and set `Flash Address` lik
 
 After flashing firmware Hikkikomory will enter setup mode. On its screen you will see
 
-<img src="./images/hiki1.jpg" alt="hiki1" width="200"/>
+<img src="./images/hiki1.jpg" alt="hiki1" width="300"/>
 
 It will create wifi access point named `Hikkikomory-Tamagotchi`. Connect to it and in your browser open `192.168.4.1` address. Fill in the fields.
 
@@ -36,11 +36,11 @@ Hikkikomory can count button press and send Datalog transaction with the followi
 
 On short button press counter will increase:
 
-<img src="./images/hiki2.jpg" alt="hiki2" width="200"/>
+<img src="./images/hiki2.jpg" alt="hiki2" width="300"/>
 
 Hold button on 2-3 seconds to send the datalog transaction. After that you will see transaction hash and QR code with the link to this transaction on [subscan](https://robonomics.subscan.io):
 
-<img src="./images/hiki3.jpg" alt="hiki3" width="200"/>
+<img src="./images/hiki3.jpg" alt="hiki3" width="300"/>
 
 ## Manual Build
 
