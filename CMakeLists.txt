@@ -2,4 +2,8 @@
 # in this exact order for cmake to work correctly
 cmake_minimum_required(VERSION 3.16)
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-project(ESP_ZIGBEE_SWITCH)
+project(press_counter_robonomics)
+add_custom_command(
+        TARGET app POST_BUILD
+        COMMAND ${python} "${CMAKE_CURRENT_LIST_DIR}/cp_builds.py" "${CMAKE_CURRENT_LIST_DIR}"
+        )
