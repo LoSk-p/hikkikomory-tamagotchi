@@ -252,8 +252,8 @@ void set_datalog_sent_screen(const char* tx_hash) {
     lv_obj_set_size(container, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL));
 
     // Create the first label and add it to the container
-    lv_obj_t *label_text = lv_label_create(container);
-    lv_label_set_text(label_text, "Datalog was sent");
+    // lv_obj_t *label_text = lv_label_create(container);
+    // lv_label_set_text(label_text, "Datalog was sent");
 
     /*Create a 100x100 QR code*/
     lv_obj_t * qr = lv_qrcode_create(container, 140, lv_color_hex3(0x33f), lv_color_hex3(0xeef));
@@ -266,9 +266,16 @@ void set_datalog_sent_screen(const char* tx_hash) {
     lv_obj_set_style_border_color(qr, bg_color, 0);
     lv_obj_set_style_border_width(qr, 5, 0);
 
+    // Create the second label (tx_hash) and add it to the container
+    lv_obj_t *label_tx_hash = lv_label_create(container);
+    lv_label_set_text(label_tx_hash, tx_hash);
+    lv_label_set_long_mode(label_tx_hash, LV_LABEL_LONG_WRAP); // Enable text wrapping
+    lv_obj_set_width(label_tx_hash, lv_pct(90));              // Set width to 90% of the container
+
     // Create the battery label
     create_battery_label(screen);
 
     // Load the screen
     lv_scr_load(screen);
 }
+
